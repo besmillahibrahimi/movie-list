@@ -129,7 +129,7 @@ body {
 
   input {
     @apply rounded-lg;
-    caret-color: hsl(var(--input));
+    /* caret-color: hsl(var(--input)); */
   }
   input:invalid {
     @apply border-destructive focus:ring-destructive;

@@ -1,8 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,22 +19,47 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { FilterIcon } from "lucide-react";
-import { IFilterSchema, IFilterState } from "@/types/list.types";
+import { FieldSchema, IFilterSchema, IFilterState } from "@/types/list.types";
 
 type FilterDialogProps<T> = {
   filterSchema: IFilterSchema<T>;
-  onFilter: (filters: IFilterState) => void;
+  filter?: IFilterState<T>;
+  onFilter?: (filters: Partial<IFilterState<T>>) => void;
+  title?: ReactNode;
+  description?: ReactNode;
 };
 
-export function FilterDialog<T>({ filterSchema, onFilter }: Readonly<FilterDialogProps<T>>) {
-  const [filters, setFilters] = useState<IFilterState>({});
+export function FilterDialog<T>({
+  filterSchema,
+  onFilter,
+  filter,
+  title = "Filter Options",
+  description,
+}: Readonly<FilterDialogProps<T>>) {
+  const [filters, setFilters] = useState<Partial<IFilterState<T>>>(filter ?? {});
 
-  const handleFilterChange = (key: string, value: string | boolean | number | string[]) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+  useEffect(() => {
+    setFilters(filter ?? {});
+  }, [filter]);
+
+  const handleFilterChange = (key: string, value: string | boolean | number | string[], operator: FilterOperator) => {
+    setFilters((prev) => ({ ...prev, [key]: { value, operator: operator } }));
   };
 
   const handleApplyFilters = () => {
-    onFilter(filters);
+    onFilter?.(filters);
+  };
+  const clearFilters = () => {
+    const clearedFilters: Partial<IFilterState<T>> = {};
+    Object.keys(filterSchema)?.forEach((k) => {
+      const key = k as keyof T;
+      clearedFilters[key] = {
+        value: (filterSchema[key].type === "checkbox" ? false : "") as any,
+        operator: filterSchema[key].operator,
+      };
+    });
+    setFilters(clearedFilters);
+    onFilter?.(clearedFilters);
   };
 
   return (
@@ -35,76 +69,99 @@ export function FilterDialog<T>({ filterSchema, onFilter }: Readonly<FilterDialo
           <FilterIcon className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="">
         <DialogHeader>
-          <DialogTitle>Filter Options</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
+          {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          {filterSchema.map((item) => (
-            <div key={item.key} className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor={item.key} className="text-right">
-                {item.label}
-              </Label>
-              {item.type === "input" && (
-                <Input
-                  id={item.key}
-                  className="col-span-3"
-                  value={(filters[item.key] as string) || ""}
-                  onChange={(e) => handleFilterChange(item.key, e.target.value)}
-                />
-              )}
-              {item.type === "checkbox" && (
-                <Checkbox
-                  id={item.key}
-                  checked={(filters[item.key] as boolean) || false}
-                  onCheckedChange={(checked) => handleFilterChange(item.key, checked)}
-                />
-              )}
-              {item.type === "radio" && item.options && (
-                <RadioGroup
-                  className="col-span-3"
-                  value={filters[item.key] as string}
-                  onValueChange={(value) => handleFilterChange(item.key, value)}
-                >
-                  {item.options.map((option) => (
-                    <div key={option} className="flex items-center space-x-2">
-                      <RadioGroupItem value={option} id={`${item.key}-${option}`} />
-                      <Label htmlFor={`${item.key}-${option}`}>{option}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              )}
-              {item.type === "select" && item.options && (
-                <Select
-                  value={filters[item.key] as string}
-                  onValueChange={(value) => handleFilterChange(item.key, value)}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select an option" />
-                  </SelectTrigger>
-                  <SelectContent>
+          {Object.keys(filterSchema).map((k) => {
+            let key = k as keyof T;
+            const item = filterSchema[key];
+            return (
+              <div key={k} className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor={k} className="text-right">
+                  {item.label}
+                </Label>
+                {item.type === "input" && (
+                  <Input
+                    id={k}
+                    className="col-span-3"
+                    value={(filters[key]?.value as string) ?? ""}
+                    onChange={(e) => handleFilterChange(k, e.target.value, item.operator)}
+                  />
+                )}
+                {item.type === "checkbox" && (
+                  <Checkbox
+                    id={k}
+                    checked={(filters[key]?.value as boolean) || false}
+                    onCheckedChange={(checked) => handleFilterChange(k, checked, item.operator)}
+                  />
+                )}
+                {item.type === "radio" && item.options && (
+                  <RadioGroup
+                    className="col-span-3"
+                    value={filters[key]?.value as string}
+                    onValueChange={(value) => handleFilterChange(k, value, item.operator)}
+                  >
                     {item.options.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
+                      <div key={option} className="flex items-center space-x-2">
+                        <RadioGroupItem value={option} id={`${k}-${option}`} />
+                        <Label htmlFor={`${k}-${option}`}>{option}</Label>
+                      </div>
                     ))}
-                  </SelectContent>
-                </Select>
-              )}
-              {item.type === "range" && item.min !== undefined && item.max !== undefined && (
-                <Slider
-                  className="col-span-3"
-                  min={item.min}
-                  max={item.max}
-                  step={1}
-                  value={[(filters[item.key] as number) || item.min]}
-                  onValueChange={([value]) => handleFilterChange(item.key, value)}
-                />
-              )}
-            </div>
-          ))}
+                  </RadioGroup>
+                )}
+                {item.type === "select" && item.options && (
+                  <Select
+                    value={filters[key]?.value as string}
+                    onValueChange={(value) => handleFilterChange(k, value, item.operator)}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {item.options.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {item.type === "range" && item.min !== undefined && item.max !== undefined && (
+                  <Slider
+                    className="col-span-3"
+                    min={item.min}
+                    max={item.max}
+                    step={1}
+                    value={[(filters[key]?.value as number) || item.min]}
+                    onValueChange={([value]) => handleFilterChange(k, value, item.operator)}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
-        <Button onClick={handleApplyFilters}>Apply Filters</Button>
+        <DialogFooter className="sm:justify-between">
+          <DialogClose asChild>
+            <Button size={"default"} type="button" variant="secondary">
+              Close
+            </Button>
+          </DialogClose>
+          <div className="flex space-x-3 items-center">
+            <DialogClose asChild>
+              <Button size={"default"} onClick={clearFilters} type="button" variant="outline">
+                Clear
+              </Button>
+            </DialogClose>
+            <DialogClose asChild>
+              <Button size={"default"} onClick={handleApplyFilters}>
+                Apply Filters
+              </Button>
+            </DialogClose>
+          </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

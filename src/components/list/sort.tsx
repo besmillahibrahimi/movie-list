@@ -12,7 +12,7 @@ import { ArrowUpDown } from "lucide-react";
 
 type SortDropdownProps = {
   sortOptions: ISortOption[];
-  onSort: (sortBy: string) => void;
+  onSort?: (sortBy: string) => void;
 };
 
 export function SortDropdown({ sortOptions, onSort }: Readonly<SortDropdownProps>) {
@@ -25,7 +25,7 @@ export function SortDropdown({ sortOptions, onSort }: Readonly<SortDropdownProps
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {sortOptions.map((option) => (
-          <DropdownMenuItem key={option.value} onClick={() => onSort(option.value)}>
+          <DropdownMenuItem key={option.value} onClick={() => onSort?.(option.value)}>
             {option.label}
           </DropdownMenuItem>
         ))}

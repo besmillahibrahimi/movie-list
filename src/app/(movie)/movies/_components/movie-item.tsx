@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { getAssetUrl } from "@/lib/utils";
 import Image from "next/image";
 
 type Props = {
@@ -9,7 +10,7 @@ export default function MovieItem({ movie }: Readonly<Props>) {
     <Card className="group relative w-full max-w-[300px] overflow-hidden rounded-xl bg-black">
       <div className="relative aspect-[3/4]">
         <Image
-          src={movie.thumbnail}
+          src={getAssetUrl(movie.thumbnail)}
           alt={movie.title}
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-105"

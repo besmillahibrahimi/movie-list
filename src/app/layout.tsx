@@ -20,9 +20,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${montserrat.className} antialiased`}
+        className={`${montserrat.className} antialiased min-h-screen`}
         style={{
           backgroundImage: 'url("/wave.png")',
           backgroundPosition: "bottom",

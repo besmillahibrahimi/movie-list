@@ -6,50 +6,50 @@ export type ISortOption = {
   value: string;
 };
 
-export type IBaseFilterSchema<T> = {
-  key: Extract<keyof T, string>;
+export type FieldSchema<T> = FilterField<T> & {
   label: ReactNode;
 };
 
-export type IFilterSchemaItemInput<T> = IBaseFilterSchema<T> & {
+export type IFilterSchemaItemInput<T> = FieldSchema<T> & {
   type: "input";
 };
 
-export type IFilterSchemaItemCheckbox<T> = IBaseFilterSchema<T> & {
+export type IFilterSchemaItemCheckbox<T> = FieldSchema<T> & {
   type: "checkbox";
 };
 
-export type IFilterSchemaItemRadio<T> = IBaseFilterSchema<T> & {
+export type IFilterSchemaItemRadio<T> = FieldSchema<T> & {
   type: "radio";
   options: string[];
 };
-export type IFilterSchemaItemSelect<T> = IBaseFilterSchema<T> & {
+export type IFilterSchemaItemSelect<T> = FieldSchema<T> & {
   type: "select";
   options: string[];
 };
 
-export type IFilterSchemaItemRange<T> = IBaseFilterSchema<T> & {
+export type IFilterSchemaItemRange<T> = FieldSchema<T> & {
   type: "range";
   min: number;
   max: number;
 };
 
-export type IFilterSchema<T> = (
-  | IFilterSchemaItemInput<T>
-  | IFilterSchemaItemCheckbox<T>
-  | IFilterSchemaItemRadio<T>
-  | IFilterSchemaItemSelect<T>
-  | IFilterSchemaItemRange<T>
-)[];
+export type IFilterSchema<T> = {
+  [K in keyof T]:
+    | IFilterSchemaItemInput<T[K]>
+    | IFilterSchemaItemCheckbox<T[K]>
+    | IFilterSchemaItemRadio<T[K]>
+    | IFilterSchemaItemSelect<T[K]>
+    | IFilterSchemaItemRange<T[K]>;
+};
 
 const filterStateSchema = z.record(z.union([z.string(), z.boolean(), z.number(), z.array(z.string())]));
 
-export type IFilterState = z.infer<typeof filterStateSchema>;
+export type IFilterState<T> = Filter<T>;
 
 export type IListHeaderProps<T> = {
-  onSearch: (query: string) => void;
-  onFilter: (filters: T) => void;
-  onSort: (sortBy: string) => void;
-  sortOptions: ISortOption[];
-  filterSchema: IFilterSchema<T>;
+  onSearch?: (query: string) => void;
+  onFilter?: (filters: Partial<IFilterState<T>>) => void;
+  onSort?: (sortBy: string) => void;
+  sortOptions?: ISortOption[];
+  filterSchema?: IFilterSchema<Partial<T>>;
 };
