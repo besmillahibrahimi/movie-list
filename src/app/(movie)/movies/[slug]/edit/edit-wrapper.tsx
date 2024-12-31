@@ -1,9 +1,15 @@
 "use client";
-import { redirect, RedirectType } from "next/navigation";
-import { MovieForm } from "../_components/movie-form";
+
 import { execCreate } from "@/lib/actions/base.action";
 
-function NewMoviePage() {
+import { redirect, RedirectType } from "next/navigation";
+import { MovieForm } from "../../_components/movie-form";
+
+type Props = {
+  movie: IMovie;
+};
+
+export default function EditWrapper({ movie }: Readonly<Props>) {
   const saveMovie = async (movie: IMovie) => {
     await execCreate<IMovie>({
       table: "movies",
@@ -12,11 +18,5 @@ function NewMoviePage() {
     });
     redirect(`/movies/${movie.id}/view`, RedirectType.replace);
   };
-  return (
-    <div className="container py-8">
-      <MovieForm onSubmit={saveMovie} />
-    </div>
-  );
+  return <MovieForm movie={movie} onSubmit={saveMovie} />;
 }
-
-export default NewMoviePage;
