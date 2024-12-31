@@ -1,4 +1,5 @@
 import { IFilterSchema, ISortOption } from "@/types/list.types";
+import { Genres } from "./genres.data";
 
 export const SortOptions: ISortOption[] = [
   {
@@ -30,7 +31,7 @@ export const filterSchema: IFilterSchema<Partial<IMovie>> = {
   genres: {
     label: "Genre",
     type: "select",
-    options: ["Action", "Comedy", "Drama", "Horror", "Romance", "Thriller"],
+    options: Genres,
     operator: "cs",
     value: [],
   },
