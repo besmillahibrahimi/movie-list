@@ -1,7 +1,7 @@
 "use client";
 
-import { type ReactNode, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogClose,
@@ -14,20 +14,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { FilterIcon } from "lucide-react";
-import { FieldSchema, IFilterSchema, IFilterState } from "@/types/list.types";
-
-type FilterDialogProps<T> = {
-  filterSchema: IFilterSchema<T>;
-  filter?: IFilterState<T>;
-  onFilter?: (filters: Partial<IFilterState<T>>) => void;
-  title?: ReactNode;
-  description?: ReactNode;
-};
+import { useEffect, useState } from "react";
 
 export function FilterDialog<T>({
   filterSchema,
@@ -53,10 +44,11 @@ export function FilterDialog<T>({
     const clearedFilters: Partial<IFilterState<T>> = {};
     Object.keys(filterSchema)?.forEach((k) => {
       const key = k as keyof T;
-      clearedFilters[key] = {
-        value: (filterSchema[key].type === "checkbox" ? false : "") as any,
-        operator: filterSchema[key].operator,
-      };
+      if (filterSchema[key])
+        clearedFilters[key] = {
+          value: (filterSchema[key].type === "checkbox" ? false : "") as any,
+          operator: filterSchema[key].operator,
+        };
     });
     setFilters(clearedFilters);
     onFilter?.(clearedFilters);
@@ -69,15 +61,16 @@ export function FilterDialog<T>({
           <FilterIcon className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="">
+      <DialogContent aria-describedby="Dialog for filtering a list." className="">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           {Object.keys(filterSchema).map((k) => {
             let key = k as keyof T;
             const item = filterSchema[key];
+            if (!item) return null;
             return (
               <div key={k} className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor={k} className="text-right">

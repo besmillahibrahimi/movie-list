@@ -2,23 +2,13 @@
 
 import { Pagination } from "./pagination";
 
-type ListFooterProps = {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  totalItems: number;
-  itemsPerPage: number;
-  showDetails?: boolean;
-};
-
 export function ListFooter({
   currentPage,
-  totalPages,
   onPageChange,
   totalItems,
-  itemsPerPage,
+  itemsPerPage = 10,
   showDetails = false,
-}: Readonly<ListFooterProps>) {
+}: Readonly<IListFooterProps>) {
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
@@ -30,7 +20,11 @@ export function ListFooter({
           <span className="font-medium">{totalItems}</span> results
         </div>
       )}
-      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
+      <Pagination
+        currentPage={currentPage}
+        totalPages={Math.ceil((totalItems ?? 0) / itemsPerPage)}
+        onPageChange={onPageChange}
+      />
     </div>
   );
 }

@@ -13,66 +13,94 @@ import {
 type PaginationProps = {
   currentPage: number;
   totalPages: number;
-  onPageChange: (page: number) => void;
+  onPageChange?: (page: number) => void;
+  maxVisiblePages?: number;
 };
 
-export function Pagination({ currentPage, totalPages, onPageChange }: Readonly<PaginationProps>) {
-  const maxVisiblePages = 5;
+function getVisiblePages(currentPage: number, totalPages: number, maxVisiblePages: number) {
   const halfVisiblePages = Math.floor(maxVisiblePages / 2);
+  let startPage = Math.max(currentPage - halfVisiblePages, 1);
+  let endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
 
-  const getPageNumbers = () => {
-    if (totalPages <= maxVisiblePages) {
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
-    }
+  if (endPage - startPage < maxVisiblePages - 1) {
+    startPage = Math.max(endPage - maxVisiblePages + 1, 1);
+  }
 
-    let startPage = Math.max(currentPage - halfVisiblePages, 1);
-    let endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+  return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+}
 
-    if (endPage - startPage < maxVisiblePages - 1) {
-      startPage = Math.max(endPage - maxVisiblePages + 1, 1);
-    }
+function getPageNumbers(currentPage: number, totalPages: number, maxVisiblePages: number) {
+  const visiblePages = getVisiblePages(currentPage, totalPages, maxVisiblePages);
 
-    const pages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+  const pageNumbers = [];
 
-    if (startPage > 1) {
-      pages.unshift(-1); // Represents left ellipsis
-      pages.unshift(1);
-    }
+  if (visiblePages[0] > 1) {
+    pageNumbers.push(1);
+    if (visiblePages[0] > 2) pageNumbers.push(-2);
+  }
 
-    if (endPage < totalPages) {
-      pages.push(-2); // Represents right ellipsis
-      pages.push(totalPages);
-    }
+  pageNumbers.push(...visiblePages);
 
-    return pages;
-  };
+  if (visiblePages[visiblePages.length - 1] < totalPages) {
+    if (visiblePages[visiblePages.length - 1] < totalPages - 1) pageNumbers.push(-1);
+    pageNumbers.push(totalPages);
+  }
 
-  const pageNumbers = getPageNumbers();
+  return pageNumbers;
+}
+
+function getNextPageNumber(currentPage: number, totalPages: number, cycle: number | null = null) {
+  return currentPage < totalPages ? currentPage + 1 : cycle;
+}
+
+function getPreviousPageNumber(currentPage: number, cycle: number | null = null) {
+  return currentPage > 1 ? currentPage - 1 : cycle;
+}
+
+export function Pagination({ currentPage, totalPages, onPageChange, maxVisiblePages = 3 }: Readonly<PaginationProps>) {
+  const pageNumbers = getPageNumbers(currentPage, totalPages, maxVisiblePages);
 
   return (
     <Paginations>
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              if (currentPage > 1) onPageChange(currentPage - 1);
+            isActive={currentPage > 1}
+            {...{
+              ...(onPageChange
+                ? {
+                    variant: "ghost",
+                    onClick: (e) => {
+                      e.preventDefault();
+                      if (currentPage > 1) onPageChange?.(currentPage - 1);
+                    },
+                  }
+                : {
+                    href: `?page=${getPreviousPageNumber(currentPage)}`,
+                  }),
             }}
           />
         </PaginationItem>
         {pageNumbers.map((pageNumber, index) => (
-          <PaginationItem key={pageNumber + index}>
+          <PaginationItem key={`page-item-${pageNumber}-${index}`}>
             {pageNumber === -1 || pageNumber === -2 ? (
               <PaginationEllipsis />
             ) : (
               <PaginationLink
-                href="#"
-                isActive={currentPage === pageNumber}
-                onClick={(e) => {
-                  e.preventDefault();
-                  onPageChange(pageNumber);
+                {...{
+                  ...(onPageChange
+                    ? {
+                        variant: "ghost",
+                        onClick: (e) => {
+                          e.preventDefault();
+                          onPageChange?.(pageNumber);
+                        },
+                      }
+                    : {
+                        href: `?page=${pageNumber}`,
+                      }),
                 }}
+                isActive={currentPage === pageNumber}
               >
                 {pageNumber}
               </PaginationLink>
@@ -81,11 +109,20 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Readonly<P
         ))}
         <PaginationItem>
           <PaginationNext
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              if (currentPage < totalPages) onPageChange(currentPage + 1);
+            {...{
+              ...(onPageChange
+                ? {
+                    variant: "ghost",
+                    onClick: (e) => {
+                      e.preventDefault();
+                      if (currentPage < totalPages) onPageChange?.(currentPage + 1);
+                    },
+                  }
+                : {
+                    href: `?page=${getNextPageNumber(currentPage, totalPages)}`,
+                  }),
             }}
+            isActive={currentPage < totalPages}
           />
         </PaginationItem>
       </PaginationContent>

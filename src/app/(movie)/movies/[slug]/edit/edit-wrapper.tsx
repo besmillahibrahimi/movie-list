@@ -1,6 +1,6 @@
 "use client";
 
-import { execCreate } from "@/lib/actions/base.action";
+import { execUpdate } from "@/lib/actions/base.action";
 
 import { redirect, RedirectType } from "next/navigation";
 import { MovieForm } from "../../_components/movie-form";
@@ -11,10 +11,10 @@ type Props = {
 
 export default function EditWrapper({ movie }: Readonly<Props>) {
   const saveMovie = async (movie: IMovie) => {
-    await execCreate<IMovie>({
+    await execUpdate<IMovie>({
       table: "movies",
       data: movie,
-      single: true,
+      filters: { id: { value: movie.id, operator: "eq" } },
     });
     redirect(`/movies/${movie.id}/view`, RedirectType.replace);
   };

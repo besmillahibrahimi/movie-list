@@ -42,7 +42,7 @@ type ReadOption<T> = BaseOption &
     select?: string;
     currentPage?: number;
     pageSize?: number;
-    sort?: string;
+    sort?: ISort<T>;
   };
 export async function execRead<T>(option: ReadOption<T>) {
   const supabase = await createClient();
@@ -60,7 +60,7 @@ export async function execRead<T>(option: ReadOption<T>) {
   query = query.range(offset, offset + pageSize - 1);
 
   if (option.sort) {
-    query = query.order(option.sort);
+    query = query.order(option.sort?.sortBy.toString(), { ascending: option.sort?.ascending });
   }
 
   return await query;
@@ -71,15 +71,17 @@ type UpdateRecordResponse<T> = {
   error: Error | null;
 };
 
-export async function updateRecord<T>(
-  tableName: string,
-  id: string | number,
-  updatedFields: Partial<T>
-): Promise<UpdateRecordResponse<T>> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from(tableName).update(updatedFields).eq("id", id).single();
+type UpdateOption<T> = BaseOption & {
+  filters: Filter<Partial<T>>;
+  data: Partial<T>;
+};
 
-  return { data, error };
+export async function execUpdate<T>({ data, filters, table }: UpdateOption<T>): Promise<UpdateRecordResponse<T>> {
+  const supabase = await createClient();
+  let query = await supabase.from(table).update(data);
+  query = applyFilters(query, filters);
+
+  return await query;
 }
 
 type DeleteRecordResponse = {

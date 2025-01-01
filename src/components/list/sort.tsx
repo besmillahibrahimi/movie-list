@@ -7,15 +7,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { ISortOption } from "@/types/list.types";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, SortAsc, SortDesc } from "lucide-react";
 
-type SortDropdownProps = {
-  sortOptions: ISortOption[];
-  onSort?: (sortBy: string) => void;
-};
-
-export function SortDropdown({ sortOptions, onSort }: Readonly<SortDropdownProps>) {
+export function SortDropdown<T>({ sortOptions, onSort, sort }: Readonly<SortDropdownProps<T>>) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -25,8 +19,13 @@ export function SortDropdown({ sortOptions, onSort }: Readonly<SortDropdownProps
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {sortOptions.map((option) => (
-          <DropdownMenuItem key={option.value} onClick={() => onSort?.(option.value)}>
+          <DropdownMenuItem
+            className="flex justify-between items-center"
+            key={String(option.value)}
+            onClick={() => onSort?.(option.value, !sort?.ascending)}
+          >
             {option.label}
+            {sort?.sortBy === option.value && (sort?.ascending ? <SortAsc /> : <SortDesc />)}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

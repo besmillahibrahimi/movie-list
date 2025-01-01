@@ -31,25 +31,25 @@ export function applyFilters<T>(query: any, filters: Filter<T>) {
         query = query.is(key, value);
         break;
       case "in":
-        query = query.in(key, value);
+        query = query.in(key, Array.isArray(value) ? value : [value]);
         break;
-      case "cs": // contains
+      case "contains":
         query = query.contains(key, Array.isArray(value) ? value : [value]);
         break;
-      case "cd": // contained by
-        query = query.cd(key, value);
+      case "containedBy":
+        query = query.containedBy(key, value);
         break;
       case "fts": // full-text search
-        query = query.fts(key, value);
+        query = query.textSearch(key, value, { type: "plain" });
         break;
       case "plfts": // phrase-to-left full-text search
-        query = query.plfts(key, value);
+        query = query.textSearch(key, value, { type: "phrase" });
         break;
       case "phfts": // phrase full-text search
-        query = query.phfts(key, value);
+        query = query.textSearch(key, value, { type: "phrase" });
         break;
       case "wfts": // web search
-        query = query.wfts(key, value);
+        query = query.wfts(key, value, { type: "websearch" });
         break;
       default:
         throw new Error(`Unsupported filter operator: ${item.operator}`);
