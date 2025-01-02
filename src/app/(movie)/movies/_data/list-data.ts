@@ -29,8 +29,9 @@ export const filterSchema: IFilterSchema<Partial<IMovie>> = {
   },
   genres: {
     label: "Genre",
-    type: "select",
+    type: "b-select",
     options: Genres,
+    multiple: true,
     operator: "contains",
     value: [],
   },

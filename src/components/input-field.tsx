@@ -5,6 +5,7 @@ import { Checkbox, type CheckboxProps } from "./ui/checkbox";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { SelectProps } from "@radix-ui/react-select";
+import BSelect from "./b-select";
 
 type BaseProps<T extends FieldValues> = {
   className?: string;
@@ -22,14 +23,22 @@ type FieldCheckboxProps<T extends FieldValues> = BaseProps<T> & {
   type: "checkbox";
   checkboxProps?: CheckboxProps;
 };
+type FieldBSelectProps<T extends FieldValues, Option> = BaseProps<T> & {
+  type: "b-select";
+  selectProps: BSelectProps<Option>;
+};
 type FieldSelectProps<T extends FieldValues> = BaseProps<T> & {
   type: "select";
   selectProps?: SelectProps;
   options: string[];
 };
-type InputFieldProps<T extends FieldValues> = FieldInputProps<T> | FieldCheckboxProps<T> | FieldSelectProps<T>;
+type InputFieldProps<T extends FieldValues, Option> =
+  | FieldInputProps<T>
+  | FieldCheckboxProps<T>
+  | FieldSelectProps<T>
+  | FieldBSelectProps<T, Option>;
 
-export function InputField<T extends FieldValues>(props: Readonly<InputFieldProps<T>>) {
+export function InputField<T extends FieldValues, Option = unknown>(props: Readonly<InputFieldProps<T, Option>>) {
   const { control, name, type, label, render, className, helper } = props;
 
   return (
@@ -67,6 +76,16 @@ export function InputField<T extends FieldValues>(props: Readonly<InputFieldProp
                         ))}
                       </SelectContent>
                     </Select>
+                  );
+                  break;
+                case "b-select":
+                  Com = (
+                    <BSelect
+                      options={props.selectProps?.options}
+                      value={field.value}
+                      multiple={props.selectProps.multiple}
+                      onChange={(value: any) => field.onChange(value)}
+                    />
                   );
                   break;
                 default:

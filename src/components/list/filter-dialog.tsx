@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { FilterIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import BSelect from "../b-select";
 
 export function FilterDialog<T>({
   filterSchema,
@@ -97,7 +98,7 @@ export function FilterDialog<T>({
                     value={filters[key]?.value as string}
                     onValueChange={(value) => handleFilterChange(k, value, item.operator)}
                   >
-                    {item.options.map((option) => (
+                    {item.options.map((option: string) => (
                       <div key={option} className="flex items-center space-x-2">
                         <RadioGroupItem value={option} id={`${k}-${option}`} />
                         <Label htmlFor={`${k}-${option}`}>{option}</Label>
@@ -114,7 +115,7 @@ export function FilterDialog<T>({
                       <SelectValue placeholder="Select an option" />
                     </SelectTrigger>
                     <SelectContent>
-                      {item.options.map((option) => (
+                      {item.options.map((option: string) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
@@ -122,7 +123,15 @@ export function FilterDialog<T>({
                     </SelectContent>
                   </Select>
                 )}
-                {item.type === "range" && item.min !== undefined && item.max !== undefined && (
+                {item.type === "b-select" && (
+                  <BSelect
+                    options={item.options}
+                    value={filters[key]?.value}
+                    multiple={item.multiple}
+                    onChange={(value: any) => handleFilterChange(k, value, item.operator)}
+                  />
+                )}
+                {item.type === "range" && (
                   <Slider
                     className="col-span-3"
                     min={item.min}

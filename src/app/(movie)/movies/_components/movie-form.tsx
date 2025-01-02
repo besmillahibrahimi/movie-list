@@ -29,6 +29,7 @@ export const MovieForm: FC<Props> = ({ movie, backUrl, onSubmit = () => null }) 
     defaultValues: movie ?? {
       title: "",
       year: 0,
+      genres: [],
     },
   });
 
@@ -82,8 +83,10 @@ export const MovieForm: FC<Props> = ({ movie, backUrl, onSubmit = () => null }) 
                 className="md:col-span-5"
                 name="genres"
                 control={form.control}
-                type="select"
-                options={Genres}
+                type="b-select"
+                selectProps={{
+                  options: Genres,
+                }}
               />
 
               <div className="md:col-span-5 flex space-x-4 md:pt-8">

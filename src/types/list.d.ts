@@ -39,6 +39,12 @@ type IFilterSchemaItemSelect<T> = FieldSchema<T> & {
   options: string[];
 };
 
+type IFilterSchemaItemBSelect<T, Option> = FieldSchema<T> & {
+  type: "b-select";
+  options: Option[];
+  multiple?: boolean;
+};
+
 type IFilterSchemaItemRange<T> = FieldSchema<T> & {
   type: "range";
   min: number;
@@ -51,6 +57,7 @@ type IFilterSchema<T> = {
     | IFilterSchemaItemCheckbox<T[K]>
     | IFilterSchemaItemRadio<T[K]>
     | IFilterSchemaItemSelect<T[K]>
+    | IFilterSchemaItemBSelect<T[K]>
     | IFilterSchemaItemRange<T[K]>;
 };
 
