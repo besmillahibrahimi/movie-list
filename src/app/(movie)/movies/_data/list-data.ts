@@ -1,6 +1,6 @@
 import { Genres } from "./genres.data";
 
-export const SortOptions: ISortOption<Partial<IMovie>>[] = [
+export const SortOptions: ISortOption<Partial<Tables<"movies">>>[] = [
   {
     label: "Name",
     value: "title",
@@ -12,7 +12,7 @@ export const SortOptions: ISortOption<Partial<IMovie>>[] = [
   },
 ];
 
-export const filterSchema: IFilterSchema<Partial<IMovie>> = {
+export const filterSchema: IFilterSchema<Partial<Tables<"movies">>> = {
   title: {
     label: "Name",
     type: "input",

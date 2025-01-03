@@ -1,5 +1,7 @@
-export function applyFilters<T>(query: any, filters: Filter<T>) {
-  Object.keys(filters).forEach((key) => {
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+export function applyFilters<T>(queryBuilder: any, filters: Filter<T>) {
+  let query = queryBuilder;
+  for (const key of Object.keys(filters)) {
     const item = filters[key as keyof T];
     const value = item.value;
     switch (item.operator) {
@@ -54,7 +56,7 @@ export function applyFilters<T>(query: any, filters: Filter<T>) {
       default:
         throw new Error(`Unsupported filter operator: ${item.operator}`);
     }
-  });
+  }
 
   return query;
 }

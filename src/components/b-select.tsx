@@ -1,4 +1,8 @@
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 import {
   Command,
@@ -15,6 +19,7 @@ import {
 import { type ReactNode, useState } from "react";
 import { Button } from "./ui/button";
 import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function BSelect<T>({
   options,
@@ -26,7 +31,11 @@ export default function BSelect<T>({
 }: Readonly<BSelectProps<T>>) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<T[]>(
-    props.value ? (Array.isArray(props.value) ? props.value : [props.value]) : []
+    props.value
+      ? Array.isArray(props.value)
+        ? props.value
+        : [props.value]
+      : []
   );
 
   function getOptionValue(value: T): string | null | number {
@@ -58,8 +67,12 @@ export default function BSelect<T>({
     if (!props.multiple) {
       newSelected = [option];
     } else {
-      newSelected = selected.some((item) => getOptionValue(item) === getOptionValue(option))
-        ? selected.filter((item) => getOptionValue(item) !== getOptionValue(option))
+      newSelected = selected.some(
+        (item) => getOptionValue(item) === getOptionValue(option)
+      )
+        ? selected.filter(
+            (item) => getOptionValue(item) !== getOptionValue(option)
+          )
         : [...selected, option];
     }
     setSelected(newSelected);
@@ -67,80 +80,97 @@ export default function BSelect<T>({
   };
 
   const handleRemove = (option: T) => {
-    const newSelected = selected.filter((item) => getOptionValue(item) !== getOptionValue(option));
+    const newSelected = selected.filter(
+      (item) => getOptionValue(item) !== getOptionValue(option)
+    );
     setSelected(newSelected);
     props.multiple && props.onChange?.(newSelected);
   };
 
-  const getSinglePlaceholder = () => (selected.length > 0 ? getOptionLabel(selected[0]) : placeholder);
+  const getSinglePlaceholder = () =>
+    selected.length > 0 ? getOptionLabel(selected[0]) : placeholder;
   const getMulitpPlaceholder = () =>
     selected.length > 0 ? (
-      selected.map((option) => (
-        <div key={getOptionValue(option)} className="flex items-center gap-x-2 border rounded">
-          {getOptionLabel(option)}
-          <button onClick={() => handleRemove(option)}>
-            <X />
-          </button>
-        </div>
-      ))
+      <div className="flex flex-wrap gap-2 p-2">
+        {selected.map((option) => (
+          <div
+            key={getOptionValue(option)}
+            className="flex items-center gap-x-2 border rounded px-1"
+          >
+            {getOptionLabel(option)}
+            <button type="button" onClick={() => handleRemove(option)}>
+              <X
+                size={"15"}
+                className="hover:scale-125 hover:rotate-180 transition-all duration-300"
+              />
+            </button>
+          </div>
+        ))}
+      </div>
     ) : (
-      <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
+      <Button
+        type="button"
+        // biome-ignore lint/a11y/useSemanticElements: <explanation>
+        role="combobox"
+        aria-controls="options"
+        aria-expanded={open}
+        className="w-full justify-start px-2 py-0 text-base font-normal"
+      >
         {placeholder}
       </Button>
     );
 
   return (
-    <div className="bg-green-200">
+    <div className="">
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild className="h-11 bg-input border-0 hover:bg-input/80 hover:border ">
+        <PopoverTrigger
+          asChild
+          className={cn(
+            " bg-input rounded-md border-0 hover:bg-input/80 hover:border ",
+            props.multiple ? "min-h-11 h-max" : "h-11"
+          )}
+        >
           {!props.multiple ? (
             <Button
-              variant="outline"
+              // biome-ignore lint/a11y/useSemanticElements: <explanation>
               role="combobox"
+              type="button"
+              aria-controls="options"
               aria-expanded={open}
               className="w-full justify-between text-base font-normal px-3"
             >
               {getSinglePlaceholder()}
             </Button>
           ) : (
-            <div className="flex flex-wrap gap-2">{getMulitpPlaceholder()}</div>
+            getMulitpPlaceholder()
           )}
         </PopoverTrigger>
-        <PopoverContent className="!w-full p-0 bg-green-200">
+        <PopoverContent className="!w-full p-0 ">
           <Command className="w-full ">
             <CommandInput placeholder="Search..." />
             <CommandList>
               <CommandGroup>
                 {options?.map((option) => (
-                  <CommandItem key={getOptionValue(option)} onSelect={() => handleSelect(option)}>
+                  <CommandItem
+                    key={getOptionValue(option)}
+                    onSelect={() => handleSelect(option)}
+                  >
                     <div>
                       <span className="absolute right-2 flex top-0 bottom-0 my-auto h-3.5 w-3.5 items-center justify-center">
-                        {selected.some((item) => getOptionValue(item) === getOptionValue(option)) && "✓"}
+                        {selected.some(
+                          (item) =>
+                            getOptionValue(item) === getOptionValue(option)
+                        ) && "✓"}
                       </span>
                     </div>
-                    {renderOption ? renderOption(option) : getOptionLabel(option)}
+                    {renderOption
+                      ? renderOption(option)
+                      : getOptionLabel(option)}
                   </CommandItem>
                 ))}
               </CommandGroup>
             </CommandList>
           </Command>
-          {/* <Command>
-          <CommandInput placeholder="Type a command or search..." />
-          <CommandList>
-            <CommandEmpty>No results found.</CommandEmpty>
-            <CommandGroup heading="Suggestions">
-              <CommandItem>Calendar</CommandItem>
-              <CommandItem>Search Emoji</CommandItem>
-              <CommandItem>Calculator</CommandItem>
-            </CommandGroup>
-            <CommandSeparator />
-            <CommandGroup heading="Settings">
-              <CommandItem>Profile</CommandItem>
-              <CommandItem>Billing</CommandItem>
-              <CommandItem>Settings</CommandItem>
-            </CommandGroup>
-          </CommandList>
-        </Command> */}
         </PopoverContent>
       </Popover>
     </div>

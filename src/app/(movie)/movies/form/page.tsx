@@ -2,19 +2,25 @@
 import { redirect, RedirectType } from "next/navigation";
 import { MovieForm } from "../_components/movie-form";
 import { execCreate } from "@/lib/actions/base.action";
+import { toast } from "sonner";
 
 function NewMoviePage() {
-  const saveMovie = async (movie: IMovie) => {
-    await execCreate<IMovie>({
+  const saveMovie = async (movie: Tables<"movies">) => {
+    console.log("saveMovie", movie);
+    const { data, error } = await execCreate({
       table: "movies",
       data: movie,
-      single: true,
     });
-    redirect(`/movies/${movie.id}/view`, RedirectType.replace);
+    if (error) {
+      toast(error.message);
+      return;
+    }
+    toast("Movie created successfully");
+    redirect("/movies", RedirectType.replace);
   };
   return (
     <div className="container py-8">
-      <MovieForm onSubmit={saveMovie} />
+      <MovieForm backUrl="/movies" onSubmit={saveMovie} />
     </div>
   );
 }

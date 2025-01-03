@@ -3,50 +3,42 @@
 import { createClient } from "../supabase/server";
 import { applyFilters } from "../supabase/utils";
 
-type SingleResponse<T> = {
-  data: T | null;
-  error: Error | null;
-};
-type MultipleResponse<T> = {
-  data: T[] | null;
-  error: Error | null;
+type BaseOption<Table extends string & keyof PublicSchema["Tables"]> = {
+  table: Table;
 };
 
-type BaseOption = {
-  table: keyof Models;
+type CreateOption<T extends keyof PublicSchema["Tables"]> = BaseOption<T> & {
+  data: TablesInsert<T> | TablesInsert<T>[];
 };
 
-type SingleOption<T> = BaseOption & {
-  single: true;
-  data: T;
-};
-type MultipleOption<T> = BaseOption & {
-  single: false;
-  data: T[];
-};
-
-type CreateOption<T> = SingleOption<T> | MultipleOption<T>;
-
-export async function execCreate<T>(options: CreateOption<T>) {
+export async function execCreate<T extends keyof PublicSchema["Tables"]>(
+  options: CreateOption<T>
+) {
   const supabase = await createClient();
-  if (options.single) return await supabase.from(options.table).insert(options.data).single();
-  return await supabase.from(options.table).insert(options.data);
+  return await supabase
+    .from<T, PublicSchema["Tables"][T]>(options.table)
+    // @ts-expect-error It's OK
+    .insert(options.data);
 }
 
-type FilterOption<T> = BaseOption & {
-  filters: Filter<Partial<T>>;
+type FilterOption<T extends keyof PublicSchema["Tables"]> = BaseOption<T> & {
+  filters: Filter<Partial<Tables<T>>>;
 };
 
-type ReadOption<T> = BaseOption &
+type ReadOption<T extends keyof PublicSchema["Tables"]> = BaseOption<T> &
   FilterOption<T> & {
     select?: string;
     currentPage?: number;
     pageSize?: number;
-    sort?: ISort<T>;
+    sort?: ISort<Tables<T>>;
   };
-export async function execRead<T>(option: ReadOption<T>) {
+export async function execRead<T extends keyof PublicSchema["Tables"]>(
+  option: ReadOption<T>
+) {
   const supabase = await createClient();
-  let query = supabase.from(option.table).select(option.select ?? "*", { count: "exact" });
+  let query = supabase
+    .from<T, PublicSchema["Tables"][T]>(option.table)
+    .select(option.select ?? "*", { count: "exact" });
 
   // Apply filters if provided
   if (option.filters) {
@@ -60,38 +52,54 @@ export async function execRead<T>(option: ReadOption<T>) {
   query = query.range(offset, offset + pageSize - 1);
 
   if (option.sort) {
-    query = query.order(option.sort?.sortBy.toString(), { ascending: option.sort?.ascending });
+    query = query.order(option.sort?.sortBy.toString(), {
+      ascending: option.sort?.ascending,
+    });
   }
 
   return await query;
 }
 
-type UpdateRecordResponse<T> = {
-  data: T | null;
+type UpdateRecordResponse<T extends keyof PublicSchema["Tables"]> = {
+  data: Tables<T> | null;
   error: Error | null;
 };
 
-type UpdateOption<T> = BaseOption & {
-  filters: Filter<Partial<T>>;
-  data: Partial<T>;
+type UpdateOption<T extends keyof PublicSchema["Tables"]> = BaseOption<T> & {
+  filters: Filter<Partial<TablesUpdate<T>>>;
+  data: TablesUpdate<T>;
 };
 
-export async function execUpdate<T>({ data, filters, table }: UpdateOption<T>): Promise<UpdateRecordResponse<T>> {
+export async function execUpdate<T extends keyof PublicSchema["Tables"]>({
+  data,
+  filters,
+  table,
+}: UpdateOption<T>): Promise<UpdateRecordResponse<T>> {
   const supabase = await createClient();
-  let query = await supabase.from(table).update(data);
+  let query = supabase
+    .from<T, PublicSchema["Tables"][T]>(table)
+    // @ts-expect-error It's OK
+    .update(data);
+
   query = applyFilters(query, filters);
 
   return await query;
 }
 
+type DeleteOption<T extends keyof PublicSchema["Tables"]> = BaseOption<T> & {
+  filters: Filter<Tables<T>>;
+};
 type DeleteRecordResponse = {
   success: boolean;
   error: Error | null;
 };
 
-export async function deleteRecord(tableName: string, id: string | number): Promise<DeleteRecordResponse> {
+export async function deleteRecord<T extends keyof PublicSchema["Tables"]>(
+  option: DeleteOption<T>
+): Promise<DeleteRecordResponse> {
   const supabase = await createClient();
-  const { error } = await supabase.from(tableName).delete().eq("id", id);
-
+  let query = await supabase.from(option.table).delete();
+  query = applyFilters(query, option.filters);
+  const { error } = await query;
   return { success: !error, error };
 }

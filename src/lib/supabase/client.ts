@@ -1,4 +1,8 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { envVars } from "../env/env-vars";
 
 export const createClient = () =>
-  createBrowserClient(process.env.NEXT_PUBLIC_SB_PROJECT_URL!, process.env.NEXT_PUBLIC_SB_PROJECT_ANON!);
+  createBrowserClient<Database>(
+    envVars.supabase.projectUrl,
+    envVars.supabase.anonKey
+  );

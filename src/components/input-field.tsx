@@ -1,16 +1,34 @@
 import type { ComponentProps, ReactNode } from "react";
-import type { Control, ControllerRenderProps, FieldValues, Path } from "react-hook-form";
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import type {
+  Control,
+  ControllerRenderProps,
+  FieldValues,
+  Path,
+} from "react-hook-form";
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Checkbox, type CheckboxProps } from "./ui/checkbox";
 import { Input } from "./ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { SelectProps } from "@radix-ui/react-select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import type { SelectProps } from "@radix-ui/react-select";
 import BSelect from "./b-select";
 
 type BaseProps<T extends FieldValues> = {
   className?: string;
   name: Path<T>;
-  control: Control<T, any>;
+  control: Control<T>;
   label?: ReactNode;
   helper?: ReactNode;
   render?: (field: ControllerRenderProps<T, Path<T>>) => ReactNode;
@@ -38,7 +56,9 @@ type InputFieldProps<T extends FieldValues, Option> =
   | FieldSelectProps<T>
   | FieldBSelectProps<T, Option>;
 
-export function InputField<T extends FieldValues, Option = unknown>(props: Readonly<InputFieldProps<T, Option>>) {
+export function InputField<T extends FieldValues, Option = unknown>(
+  props: Readonly<InputFieldProps<T, Option>>
+) {
   const { control, name, type, label, render, className, helper } = props;
 
   return (
@@ -54,17 +74,28 @@ export function InputField<T extends FieldValues, Option = unknown>(props: Reado
                 return render(field);
               }
 
-              let Com;
+              let Com: React.ReactNode;
               switch (type) {
                 case "input":
                   Com = <Input {...field} {...props.inputProps} />;
                   break;
                 case "checkbox":
-                  Com = <Checkbox {...field} {...props.checkboxProps} />;
+                  Com = (
+                    <Checkbox
+                      onCheckedChange={field.onChange}
+                      checked={field.value}
+                      {...field}
+                      {...props.checkboxProps}
+                    />
+                  );
                   break;
                 case "select":
                   Com = (
-                    <Select onValueChange={field.onChange} defaultValue={field.value} {...props.selectProps}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      {...props.selectProps}
+                    >
                       <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select an option" />
                       </SelectTrigger>
@@ -81,10 +112,11 @@ export function InputField<T extends FieldValues, Option = unknown>(props: Reado
                 case "b-select":
                   Com = (
                     <BSelect
-                      options={props.selectProps?.options}
                       value={field.value}
-                      multiple={props.selectProps.multiple}
-                      onChange={(value: any) => field.onChange(value)}
+                      onChange={(value: Option | Option[]) =>
+                        field.onChange(value)
+                      }
+                      {...props.selectProps}
                     />
                   );
                   break;

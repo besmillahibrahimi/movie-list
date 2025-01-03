@@ -1,10 +1,20 @@
 import { Card } from "@/components/ui/card";
 import { getAssetUrl } from "@/lib/utils";
-import { Film } from "lucide-react";
+import { Film, MoreVertical } from "lucide-react";
 import Image from "next/image";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
+
 type Props = {
-  movie: IMovie;
+  movie: Tables<"movies">;
 };
 export default function MovieItem({ movie }: Readonly<Props>) {
   return (
@@ -20,13 +30,28 @@ export default function MovieItem({ movie }: Readonly<Props>) {
             priority
           />
         ) : (
-          <Film size={400} />
+          <Film size={250} />
         )}
       </div>
       {/* Content */}
-      <div className=" w-full p-4">
-        <h3 className="text-lg font-semibold text-white line-clamp-2">{movie.title}</h3>
-        <p className="text-sm text-gray-300">{movie.year}</p>
+      <div className="flex justify-between items-start w-full p-4">
+        <div>
+          <h3 className="text-lg font-semibold text-white line-clamp-2">
+            {movie.title}
+          </h3>
+          <p className="text-sm text-gray-300">{movie.year}</p>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <MoreVertical />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>
+              <Link href={`/movies/${movie.id}/edit`}>Edit</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>Delete</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </Card>
   );

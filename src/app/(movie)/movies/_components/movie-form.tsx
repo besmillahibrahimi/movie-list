@@ -8,28 +8,37 @@ import { InputField } from "@/components/input-field";
 import { PhotoUpload } from "@/components/photo-upload";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { FC, useEffect } from "react";
+import { type FC, useEffect } from "react";
 import { MovieFormSchema } from "../_data/create-movie";
 import { Genres } from "../_data/genres.data";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { SubmitButton } from "@/components/submit-button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 type Props = {
-  movie?: IMovie | null;
+  movie?: Tables<"movies">;
   backUrl?: string;
-  onSubmit?: (values: IMovie) => void;
+  onSubmit?: (values: Tables<"movies">) => void;
 };
 
-export const MovieForm: FC<Props> = ({ movie, backUrl, onSubmit = () => null }) => {
+export const MovieForm: FC<Props> = ({
+  movie,
+  backUrl,
+  onSubmit = () => null,
+}) => {
   const router = useRouter();
 
-  const form = useForm<IMovie>({
+  const form = useForm<Tables<"movies">>({
     resolver: zodResolver(MovieFormSchema),
     defaultValues: movie ?? {
       title: "",
       year: 0,
       genres: [],
+      is_for_children: false,
+      summary: "",
+      rating: 0,
     },
   });
 
@@ -37,13 +46,13 @@ export const MovieForm: FC<Props> = ({ movie, backUrl, onSubmit = () => null }) 
     if (movie) {
       form.reset(movie);
     }
-  }, [movie]);
+  }, [movie, form]);
 
   return (
     <div className="flex flex-col space-y-5 md:space-y-20">
       <div className="flex items-center gap-x-3">
         {backUrl ? (
-          <Link href={backUrl}>
+          <Link href={backUrl} target="_self">
             <ArrowLeft />
           </Link>
         ) : (
@@ -52,11 +61,16 @@ export const MovieForm: FC<Props> = ({ movie, backUrl, onSubmit = () => null }) 
           </button>
         )}
         <h1 className="text-3xl font-bold text-white">
-          {movie ? `Edit movie {${form.watch("title")}}` : "Create a new new movie"}
+          {movie
+            ? `Edit movie {${form.watch("title")}}`
+            : "Create a new new movie"}
         </h1>
       </div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 ">
+        <form
+          onSubmit={form.handleSubmit(onSubmit, console.error)}
+          className="space-y-8 "
+        >
           <div className="grid grid-cols-1 gap-5 md:gap-12 md:grid-cols-5">
             <div className="md:col-span-2">
               <PhotoUpload />
@@ -86,7 +100,35 @@ export const MovieForm: FC<Props> = ({ movie, backUrl, onSubmit = () => null }) 
                 type="b-select"
                 selectProps={{
                   options: Genres,
+                  multiple: true,
+                  placeholder: "Genres",
                 }}
+              />
+              <InputField
+                className="md:col-span-4"
+                name="rating"
+                control={form.control}
+                type="b-select"
+                selectProps={{
+                  options: [1, 2, 3, 4, 5],
+                  placeholder: "Rating",
+                }}
+              />
+
+              <InputField
+                className="md:col-span-5"
+                name="is_for_children"
+                control={form.control}
+                type="checkbox"
+                render={(field) => (
+                  <div className="flex items-center gap-x-2">
+                    <Checkbox
+                      checked={field.value as boolean}
+                      onCheckedChange={field.onChange}
+                    />
+                    <Label>Is for children?</Label>
+                  </div>
+                )}
               />
 
               <div className="md:col-span-5 flex space-x-4 md:pt-8">
@@ -98,7 +140,9 @@ export const MovieForm: FC<Props> = ({ movie, backUrl, onSubmit = () => null }) 
                 >
                   Cancel
                 </Button>
-                <SubmitButton className="flex-1 bg-green-500 text-white hover:bg-green-600">Submit</SubmitButton>
+                <Button type="submit" className="flex-1 ">
+                  Submit
+                </Button>
               </div>
             </div>
           </div>

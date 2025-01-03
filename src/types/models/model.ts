@@ -1,3 +1,0 @@
-type Models = {
-  movies: IMovie;
-};

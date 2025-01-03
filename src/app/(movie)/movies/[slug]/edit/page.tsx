@@ -8,15 +8,15 @@ type Props = {
 
 export default async function EditPage({ params }: Readonly<Props>) {
   const { slug } = await params;
-  let movie: IMovie | null = null;
+  let movie: Tables<"movies"> | null = null;
 
-  const { data } = await execRead<IMovie>({
+  const { data } = await execRead({
     table: "movies",
-    filters: { id: { value: parseInt(slug), operator: "eq" } },
+    filters: { id: { value: Number.parseInt(slug), operator: "eq" } },
     select: "*",
   });
 
-  if (data) movie = data[0] as unknown as IMovie;
+  if (data) movie = data[0] as unknown as Tables<"movies">;
   if (!movie) return notFound();
 
   return (
