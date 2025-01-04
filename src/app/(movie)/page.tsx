@@ -46,8 +46,7 @@ function MoviesPage({
       sort,
     });
     if (error) {
-      console.error(error);
-      return;
+      return error;
     }
 
     setList(data as unknown as Tables<"movies">[]);

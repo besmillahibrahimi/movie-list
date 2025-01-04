@@ -12,7 +12,6 @@ type Props = {
 
 export default function EditWrapper({ movie }: Readonly<Props>) {
   const saveMovie = async (movie: Tables<"movies">) => {
-    console.log("saveMovie", movie);
     const { error } = await execUpdate({
       table: "movies",
       data: movie,

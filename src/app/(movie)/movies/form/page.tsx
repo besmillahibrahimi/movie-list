@@ -6,8 +6,7 @@ import { toast } from "sonner";
 
 function NewMoviePage() {
   const saveMovie = async (movie: Tables<"movies">) => {
-    console.log("saveMovie", movie);
-    const { data, error } = await execCreate({
+    const { error } = await execCreate({
       table: "movies",
       data: movie,
     });

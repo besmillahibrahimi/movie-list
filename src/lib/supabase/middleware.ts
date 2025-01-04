@@ -29,7 +29,7 @@ export const updateSession = async (request: NextRequest) => {
     const user = await supabase.auth.getUser();
 
     // if user exists, and the current path is on /auth/* routes, then redirect to home
-    console.log("user", user);
+
     if (request.nextUrl.pathname.startsWith("/auth") && user.data.user) {
       return NextResponse.redirect(new URL("/", request.url));
     }

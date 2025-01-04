@@ -36,7 +36,6 @@ function LoginPage({
     const { error } = await signInAction(values);
     setLoading(false);
     if (error) {
-      console.log("error", error);
       toast.error(error.message);
       return;
     }
