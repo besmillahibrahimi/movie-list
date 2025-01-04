@@ -16,14 +16,14 @@ const FieldView: React.FC<{
   return (
     <div className="grid grid-cols-12 md:col-span-5">
       <p className="col-span-3">{field}</p>
-      <p
+      <div
         className={cn(
           "col-span-9 flex h-11 items-center w-full rounded-md border border-input bg-input px-3 py-1 text-base ",
           className
         )}
       >
         {data}
-      </p>
+      </div>
     </div>
   );
 };
@@ -32,7 +32,7 @@ export const MovieDetails: React.FC<Props> = ({ movie, backUrl }) => {
   return (
     <div className="flex flex-col space-y-5">
       <div className="flex gap-x-2 items-center">
-        <Link href="/movies" target="self">
+        <Link href="/" target="_parent">
           <ArrowLeft />
         </Link>
         <h1 className="text-3xl font-bold text-white">{movie.title}</h1>
@@ -60,18 +60,10 @@ export const MovieDetails: React.FC<Props> = ({ movie, backUrl }) => {
 
           <FieldView data={movie.genres?.join(", ")} field={"Genres"} />
 
-          <FieldView
-            data={movie.rating}
-            field={"Rating"}
-            className="col-span-5"
-          />
+          <FieldView data={movie.rating} field={"Rating"} className="col-span-5" />
 
           <FieldView
-            data={
-              <div className="flex items-center gap-x-2">
-                {movie.is_for_children ? <Check /> : <X />}
-              </div>
-            }
+            data={<div className="flex items-center gap-x-2">{movie.is_for_children ? <Check /> : <X />}</div>}
             field={"Is for children"}
           />
         </div>

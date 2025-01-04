@@ -16,11 +16,11 @@ function NewMoviePage() {
       return;
     }
     toast("Movie created successfully");
-    redirect("/movies", RedirectType.replace);
+    redirect("/", RedirectType.replace);
   };
   return (
     <div className="container py-8">
-      <MovieForm backUrl="/movies" onSubmit={saveMovie} />
+      <MovieForm backUrl="/" onSubmit={saveMovie} />
     </div>
   );
 }

@@ -7,15 +7,14 @@ import { useForm } from "react-hook-form";
 import { InputField } from "@/components/input-field";
 import { PhotoUpload } from "@/components/photo-upload";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Form } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { type FC, useEffect } from "react";
 import { MovieFormSchema } from "../_data/create-movie";
 import { Genres } from "../_data/genres.data";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { SubmitButton } from "@/components/submit-button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 
 type Props = {
   movie?: Tables<"movies">;
@@ -23,11 +22,7 @@ type Props = {
   onSubmit?: (values: Tables<"movies">) => void;
 };
 
-export const MovieForm: FC<Props> = ({
-  movie,
-  backUrl,
-  onSubmit = () => null,
-}) => {
+export const MovieForm: FC<Props> = ({ movie, backUrl, onSubmit = () => null }) => {
   const router = useRouter();
 
   const form = useForm<Tables<"movies">>({
@@ -61,16 +56,11 @@ export const MovieForm: FC<Props> = ({
           </button>
         )}
         <h1 className="text-3xl font-bold text-white">
-          {movie
-            ? `Edit movie {${form.watch("title")}}`
-            : "Create a new new movie"}
+          {movie ? `Edit movie {${form.watch("title")}}` : "Create a new new movie"}
         </h1>
       </div>
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit, console.error)}
-          className="space-y-8 "
-        >
+        <form onSubmit={form.handleSubmit(onSubmit, console.error)} className="space-y-8 ">
           <div className="grid grid-cols-1 gap-5 md:gap-12 md:grid-cols-5">
             <div className="md:col-span-2">
               <PhotoUpload />
@@ -122,10 +112,7 @@ export const MovieForm: FC<Props> = ({
                 type="checkbox"
                 render={(field) => (
                   <div className="flex items-center gap-x-2">
-                    <Checkbox
-                      checked={field.value as boolean}
-                      onCheckedChange={field.onChange}
-                    />
+                    <Checkbox checked={field.value as boolean} onCheckedChange={field.onChange} />
                     <Label>Is for children?</Label>
                   </div>
                 )}

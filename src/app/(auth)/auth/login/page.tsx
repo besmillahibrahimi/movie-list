@@ -1,31 +1,65 @@
 "use client";
 import { Form } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 
-import { z } from "zod";
 import { InputField } from "@/components/input-field";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/submit-button";
 
-const Schema = z.object({
-  username: z.string().email("Enter a valid email").max(50),
-  password: z
-    .string()
-    .min(8, "Your password must be at least 8 characters")
-    .max(50, "It's good to have password with max length 50 characters"),
-  rememberMe: z.boolean().optional(),
-});
-type LoginType = z.infer<typeof Schema>;
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { use, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { signInAction } from "../_actions/auth.actions";
+import { LoginSchema, LoginType } from "../_utils/auth-schema";
 
-function LoginPage() {
+function LoginPage({
+  searchParams,
+}: Readonly<{
+  searchParams: Promise<{ error?: string; error_code?: string; error_description?: string; success?: string }>;
+}>) {
+  const query = use(searchParams);
+
+  const [loading, setLoading] = useState<boolean>(false);
+
   const form = useForm<LoginType>({
-    resolver: zodResolver(Schema),
+    resolver: zodResolver(LoginSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
       rememberMe: false,
     },
   });
+
+  const login = async (values: LoginType) => {
+    setLoading(true);
+    const { error } = await signInAction(values);
+    setLoading(false);
+    if (error) {
+      console.log("error", error);
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success("Logged in successfully! Redirecting...", {});
+    redirect("/");
+  };
+
+  useEffect(() => {
+    if (query.error) {
+      setTimeout(() => {
+        toast.error(query.error_description, {
+          action: query.error_code === "otp_expired" && (
+            <Link className={"bg-primary rounded-lg p-2"} href={"/auth/email-confirmation/resend"}>
+              Resend
+            </Link>
+          ),
+        });
+      }, 500);
+    } else if (query.success) {
+      toast.success(query.success);
+    }
+  }, [query]);
 
   return (
     <div>
@@ -33,14 +67,14 @@ function LoginPage() {
         <h1>Sign In</h1>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(console.info, console.warn)}
-            className="min-w-72 flex flex-col items-center space-y-5"
+            onSubmit={form.handleSubmit(login, console.warn)}
+            className="sm:min-w-72 flex flex-col items-center space-y-5"
           >
             <InputField
               type="input"
               className="w-full"
               inputProps={{ type: "email", placeholder: "Email" }}
-              name={"username"}
+              name={"email"}
               control={form.control}
             />
             <InputField
@@ -57,9 +91,18 @@ function LoginPage() {
               control={form.control}
               label="Remember Me"
             />
-            <Button className="w-full" type="submit">
-              Login
-            </Button>
+            <SubmitButton disabled={loading} className="w-full" type="submit">
+              {loading ? "logging in..." : "Login"}
+            </SubmitButton>
+
+            <div className="flex items-center space-x-2">
+              <p>
+                <em>Don't have an account?</em>
+              </p>
+              <Link className="underline" href={"/auth/sign-up"}>
+                Create one!
+              </Link>
+            </div>
           </form>
         </Form>
       </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Image from "next/image";
+import { Toaster } from "@/components/ui/sonner";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -20,9 +21,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body
-        className={`${montserrat.className} antialiased min-h-screen`}
+        suppressHydrationWarning
+        className={`${montserrat.className} antialiased min-h-screen pb-32`}
         style={{
           backgroundImage: 'url("/wave.png")',
           backgroundPosition: "bottom",
@@ -31,6 +33,7 @@ export default function RootLayout({
         }}
       >
         {children}
+        <Toaster />
       </body>
     </html>
   );
